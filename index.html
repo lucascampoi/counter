@@ -1355,7 +1355,7 @@ function buildTTF(f){
 }
 
 // ---------- Export dialog with live preview ----------
-let lastBuild=null,previewSeq=0;
+let lastBuild=null,previewSeq=0,previewFace=null;
 async function openExport(){
   const d=$('expDlg');
   const drawn=font.glyphs.filter(isDrawn).length;
@@ -1373,7 +1373,10 @@ async function openExport(){
   const fam='CounterPreview'+(++previewSeq);
   try{
     const face=new FontFace(fam,lastBuild.buffer.slice(0));
-    await face.load();document.fonts.add(face);
+    await face.load();
+    // drop the previous preview font so repeated exports don't pile up in document.fonts
+    if(previewFace)document.fonts.delete(previewFace);
+    document.fonts.add(face);previewFace=face;
     $('expPreview').style.fontFamily=`"${fam}", var(--mono)`;
     renderPreview();
   }catch(err){$('expErr').textContent='The browser rejected the font. Please report this with your .counter.json.'}
@@ -1444,7 +1447,11 @@ document.addEventListener('keydown',e=>{
   if(mod&&(e.key==='ArrowLeft'||e.key==='ArrowRight')){e.preventDefault();setActive(curTab().ai+(e.key==='ArrowLeft'?-1:1));return}
   if(mod&&k==='a'){e.preventDefault();const g=curGlyph();if(!g)return;ed.sel=new Set();g.contours.forEach((c,ci)=>c.nodes.forEach((n,ni)=>ed.sel.add(`${ci}:${ni}`)));renderEditor();return}
   if(mod)return;
-  if(e.key===' '){e.preventDefault();if(!ed.space){ed.space=true;renderEditor()}return}
+  if(e.key===' '){
+    e.preventDefault();
+    // Space is the temporary Hand tool: a focused button or tab must not also be clicked by it
+    const a=document.activeElement;if(a&&a.matches&&a.matches('button,[role=tab]'))a.blur();
+    if(!ed.space){ed.space=true;renderEditor()}return}
   if(k==='v')setTool('pointer');
   else if(k==='p')setTool('pen');
   else if(k==='h')setTool('hand');
