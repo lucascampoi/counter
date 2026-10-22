@@ -80,6 +80,7 @@ header h1 small{font-weight:400;color:var(--muted);font-size:13px;margin-left:8p
 .sec h3 span{color:var(--muted);font-weight:400}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(var(--cell),1fr));gap:16px 20px}
 .notes{position:absolute;right:0;top:0;bottom:0;width:300px;max-width:100%;background:var(--bg);border-left:1px solid var(--line);z-index:7;display:flex;flex-direction:column;box-shadow:-6px 0 16px rgba(0,0,0,.06)}
+.notes[hidden],[hidden]{display:none!important}
 .nhead{display:flex;align-items:center;justify-content:space-between;padding:10px 8px 10px 14px;border-bottom:1px solid var(--line)}
 .nhead h2{font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;margin:0}
 .nhead .gname{font-family:var(--mono);text-transform:none;letter-spacing:0;color:var(--fg);font-size:11px}
@@ -200,6 +201,17 @@ dialog input{width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid v
 dialog .row{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 dialog .err{color:var(--danger);font-size:11px;min-height:14px;margin-top:6px}
 dialog.wide{width:min(760px,92vw)}
+dialog.mid{width:min(440px,92vw)}
+.comp{fill:none;stroke:var(--accent);stroke-width:1.2;stroke-dasharray:5 4}
+.complist{display:grid;gap:6px;margin:12px 0}
+.comprow{display:grid;grid-template-columns:1fr auto auto auto auto;gap:6px;align-items:center;font-family:var(--mono);font-size:12px;padding:6px 8px;border:1px solid var(--line);border-radius:4px}
+.comprow input{width:7ch;padding:3px 4px;font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:3px;background:var(--bg);color:var(--fg)}
+.comprow label{color:var(--muted);display:flex;gap:4px;align-items:center;margin:0}
+.comprow .miss{color:var(--danger)}
+.compadd label{display:block;font-size:11px;color:var(--muted);margin:4px 0}
+.compadd .nrow{display:grid;grid-template-columns:1fr auto;gap:8px}
+.compadd input{width:100%;box-sizing:border-box;padding:7px 8px;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--fg);font-family:var(--mono)}
+.sugg{display:flex;align-items:center;gap:8px;justify-content:space-between;padding:8px 10px;margin-top:10px;border-radius:4px;background:var(--accent-soft);font-size:12px}
 .exphead{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .exphead strong{font-size:15px}
 .fmt{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:3px;padding:2px 6px;white-space:nowrap}
@@ -262,6 +274,19 @@ dialog.wide{width:min(760px,92vw)}
   </form>
 </dialog>
 
+<dialog id="compDlg" class="mid" aria-labelledby="compTitle">
+  <strong id="compTitle">Components</strong>
+  <p class="muted small">Build this glyph from other glyphs, like Á from A and an acute. When the base changes, this glyph follows.</p>
+  <div id="compSuggest"></div>
+  <div id="compList" class="complist"></div>
+  <form id="compForm" class="compadd">
+    <label for="compRef">Add a glyph by name or character</label>
+    <div class="nrow"><input id="compRef" placeholder="A  or  acutecomb  or  ´" autocomplete="off"><button class="btn primary sm" type="submit">Add</button></div>
+  </form>
+  <div class="err" id="compErr"></div>
+  <div class="row"><button type="button" class="btn" id="compClose">Done</button></div>
+</dialog>
+
 <dialog id="expDlg" class="wide" aria-labelledby="expTitle">
   <div class="exphead"><div><strong id="expTitle">Export font</strong><p class="muted small" id="expInfo"></p></div><span class="fmt">TrueType · .ttf</span></div>
   <label for="expText">Preview text</label>
@@ -277,7 +302,10 @@ dialog.wide{width:min(760px,92vw)}
 // Glyphs start empty: the grey letter is only a placeholder.
 // Contour: {closed, nodes:[{x, y, smooth, in:{x,y}|null, out:{x,y}|null}]}
 // Font units, y up, baseline 0. A segment a→b is a cubic curve when a.out or b.in exists, otherwise a line.
-const NAMES={'0':'zero','1':'one','2':'two','3':'three','4':'four','5':'five','6':'six','7':'seven','8':'eight','9':'nine','.':'period',',':'comma','-':'hyphen',':':'colon',';':'semicolon','!':'exclam','?':'question','"':'quotedbl',"'":'quotesingle','(':'parenleft',')':'parenright',' ':'space','&':'ampersand','@':'at','#':'numbersign','$':'dollar','%':'percent','*':'asterisk','+':'plus','/':'slash','=':'equal'};
+const NAMES={'0':'zero','1':'one','2':'two','3':'three','4':'four','5':'five','6':'six','7':'seven','8':'eight','9':'nine','.':'period',',':'comma','-':'hyphen',':':'colon',';':'semicolon','!':'exclam','?':'question','"':'quotedbl',"'":'quotesingle','(':'parenleft',')':'parenright',' ':'space','&':'ampersand','@':'at','#':'numbersign','$':'dollar','%':'percent','*':'asterisk','+':'plus','/':'slash','=':'equal',
+  // accents, spacing and combining (Adobe Glyph List names)
+  '\u00B4':'acute','`':'grave','^':'asciicircum','~':'asciitilde','\u00A8':'dieresis','\u00B8':'cedilla','\u02DA':'ring','\u00AF':'macron','\u02C7':'caron',
+  '\u0301':'acutecomb','\u0300':'gravecomb','\u0303':'tildecomb','\u0302':'uni0302','\u0308':'uni0308','\u0327':'uni0327'};
 const hex=cp=>cp.toString(16).toUpperCase().padStart(4,'0');
 function catOf(ch){
   if(/\p{L}/u.test(ch))return'letter';
@@ -305,7 +333,7 @@ function makeGlyph(ch,name){
   const cp=ch.codePointAt(0);
   let nm=name||autoName(ch);
   if(!name&&typeof font!=='undefined'&&font&&font.glyphs.some(g=>g.name===nm))nm='uni'+hex(cp);
-  return{name:nm,unicode:cp,char:ch,category:catOf(ch),script:scriptOf(ch),advance:ch===' '?250:600,lsb:0,rsb:0,contours:[]};
+  return{name:nm,unicode:cp,char:ch,category:catOf(ch),script:scriptOf(ch),advance:ch===' '?250:600,lsb:0,rsb:0,contours:[],components:[]};
 }
 function newFont(){
   const chars=[...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,-:;!?()',' '];
@@ -336,6 +364,7 @@ function normalize(f){
       const nodes=Array.isArray(c.nodes)?c.nodes:pointsToNodes(c);
       return{closed:!!c.closed,nodes:nodes.map(n=>({x:Math.round(+n.x||0),y:Math.round(+n.y||0),smooth:!!n.smooth,in:pt(n.in),out:pt(n.out)}))};
     }).filter(c=>c.nodes.length);
+    g.components=Array.isArray(g.components)?g.components.filter(c=>c&&typeof c.ref==='string').map(c=>({ref:c.ref,dx:Math.round(+c.dx||0),dy:Math.round(+c.dy||0)})):[];
     g.notes=Array.isArray(g.notes)?g.notes.filter(n=>n&&typeof n.text==='string').map(n=>({id:String(n.id||Math.random().toString(36).slice(2,10)),text:n.text,author:String(n.author||''),assignee:String(n.assignee||''),created:n.created||new Date().toISOString(),resolved:!!n.resolved})):[];
   }
   return f;
@@ -382,8 +411,21 @@ function contourD(c,map){
 }
 // Filled outline: contour directions are corrected by nesting, so overlapping shapes merge (union)
 // and only shapes fully inside another become counters. Filled with the nonzero rule.
+// Full outline of a glyph: its own contours plus every component, moved by its offset.
+// Guarded against loops (a glyph that, through components, refers to itself).
+function glyphOutline(g,seen){
+  seen=seen||new Set();if(!g||seen.has(g.name))return[];seen.add(g.name);
+  const out=g.contours.slice();
+  for(const comp of g.components||[]){
+    const base=font.glyphs.find(x=>x.name===comp.ref);if(!base)continue;
+    const mv=p=>p?{x:p.x+comp.dx,y:p.y+comp.dy}:null;
+    for(const c of glyphOutline(base,new Set(seen)))out.push({closed:c.closed,nodes:c.nodes.map(n=>({x:n.x+comp.dx,y:n.y+comp.dy,smooth:n.smooth,in:mv(n.in),out:mv(n.out)}))});
+  }
+  return out;
+}
+const componentOutline=g=>glyphOutline({...g,contours:[]});
 function fillD(g,map){
-  const cs=g.contours.filter(c=>c.closed&&c.nodes.length>=2);
+  const cs=glyphOutline(g).filter(c=>c.closed&&c.nodes.length>=2);
   const polys=cs.map(c=>flatten(c,8));
   return cs.map((c,i)=>{
     let depth=0;
@@ -406,7 +448,7 @@ const SCRIPTS=[['latin','Latin'],['cyrillic','Cyrillic'],['greek','Greek'],['com
 const SECTION={letter:'Letter',number:'Number',punctuation:'Punctuation',separator:'Separator',symbol:'Symbol'};
 const $=id=>document.getElementById(id);
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const isDrawn=g=>g.contours.some(c=>c.nodes.length>0);
+const isDrawn=g=>glyphOutline(g).some(c=>c.nodes.length>0);
 const isSpace=g=>/\p{Z}/u.test(g.char);
 
 function visible(){
@@ -557,7 +599,7 @@ function zoomAt(sx,sy,f){
 }
 function xBounds(g){
   let a=Infinity,b=-Infinity;
-  for(const c of g.contours)for(const p of flatten(c,12)){a=Math.min(a,p.x);b=Math.max(b,p.x)}
+  for(const c of glyphOutline(g))for(const p of flatten(c,12)){a=Math.min(a,p.x);b=Math.max(b,p.x)}
   return a===Infinity?null:[a,b];
 }
 function syncSidebearings(g){const b=xBounds(g);if(b){g.lsb=Math.round(b[0]);g.rsb=Math.round(g.advance-b[1])}else{g.lsb=0;g.rsb=0}}
@@ -578,9 +620,9 @@ function constrain(a,b){
 
 // history, per glyph
 const H=()=>hist[ed.name]||(hist[ed.name]={u:[],r:[]});
-const snap=g=>JSON.stringify({c:g.contours,a:g.advance});
+const snap=g=>JSON.stringify({c:g.contours,a:g.advance,k:g.components});
 function checkpoint(){const h=H();h.u.push(snap(curGlyph()));if(h.u.length>200)h.u.shift();h.r=[]}
-function restore(s){const g=curGlyph(),o=JSON.parse(s);g.contours=o.c;g.advance=o.a;ed.sel.clear();ed.active=null;commit()}
+function restore(s){const g=curGlyph(),o=JSON.parse(s);g.contours=o.c;g.advance=o.a;if(o.k)g.components=o.k;ed.sel.clear();ed.active=null;commit()}
 function undo(){if(!curGlyph())return;const h=H();if(!h.u.length)return;h.r.push(snap(curGlyph()));restore(h.u.pop())}
 function redo(){if(!curGlyph())return;const h=H();if(!h.r.length)return;h.u.push(snap(curGlyph()));restore(h.r.pop())}
 function commit(){const g=curGlyph();if(g)syncSidebearings(g);save();renderEditor();renderEditorBar();renderInfo()}
@@ -698,6 +740,58 @@ function pasteClip(){
   for(let ci=base;ci<g.contours.length;ci++)g.contours[ci].nodes.forEach((n,ni)=>ed.sel.add(`${ci}:${ni}`));
   commit();toast(`Pasted ${clip.length} path${clip.length>1?'s':''} in place`);
 }
+// ---------- Components: build a glyph from other glyphs (Á = A + acute) ----------
+// combining mark -> its spacing twin, so ´ (U+00B4) can stand in for U+0301
+const MARK_SPACING={'\u0301':'\u00B4','\u0300':'\u0060','\u0302':'\u005E','\u0303':'\u007E','\u0308':'\u00A8','\u0327':'\u00B8','\u030A':'\u02DA','\u0304':'\u00AF','\u030C':'\u02C7'};
+function findGlyph(q){
+  q=q.trim();if(!q)return null;
+  return font.glyphs.find(g=>g.name===q)||([...q].length===1?glyphFor(q):null)
+    ||(/^(u\+)?[0-9a-f]{4,6}$/i.test(q)?font.glyphs.find(g=>g.unicode===parseInt(q.replace(/^u\+/i,''),16)):null);
+}
+function usesGlyph(a,name,seen=new Set()){
+  if(!a||seen.has(a.name))return false;seen.add(a.name);
+  return(a.components||[]).some(c=>c.ref===name||usesGlyph(font.glyphs.find(x=>x.name===c.ref),name,seen));
+}
+function centerComp(g,comp){const base=font.glyphs.find(x=>x.name===comp.ref),bb=base&&xBounds(base);if(bb)comp.dx=Math.round(g.advance/2-(bb[0]+bb[1])/2)}
+function suggestion(g){
+  const parts=[...g.char.normalize('NFD')];if(parts.length!==2)return null;
+  const[b,m]=parts,spacing=MARK_SPACING[m];
+  return{b,m,spacing,base:glyphFor(b),mark:glyphFor(m)||(spacing&&glyphFor(spacing))};
+}
+function applySuggestion(g){
+  const sg=suggestion(g);if(!sg||!sg.base||!sg.mark)return;
+  checkpoint();
+  g.components=[{ref:sg.base.name,dx:0,dy:0},{ref:sg.mark.name,dx:0,dy:0}];
+  if(!g.contours.length)g.advance=sg.base.advance;
+  centerComp(g,g.components[1]);
+  if(sg.b!==sg.b.toLowerCase())g.components[1].dy=font.capHeight-font.xHeight; // capitals: lift the accent from x-height to cap height
+  commit();renderComp();
+}
+function renderComp(){
+  const g=curGlyph();if(!g)return;
+  $('compTitle').textContent='Components · '+g.name;
+  const sg=suggestion(g);let sh='';
+  if(sg&&!g.components.length){
+    if(sg.base&&sg.mark)sh=`<div class="sugg"><span>Build ${esc(g.char)} from <b>${esc(sg.base.name)}</b> + <b>${esc(sg.mark.name)}</b></span><button type="button" class="btn primary sm" data-comp-suggest>Use</button></div>`;
+    else if(sg.base&&!sg.mark&&sg.spacing)sh=`<div class="sugg"><span>${esc(g.char)} = ${esc(sg.b)} + ${esc(sg.spacing)}. Add the accent to the font and draw it first.</span><button type="button" class="btn sm" data-comp-addmark="${esc(sg.spacing)}">Add ${esc(sg.spacing)}</button></div>`;
+  }
+  $('compSuggest').innerHTML=sh;
+  $('compList').innerHTML=g.components.map((c,i)=>{const base=font.glyphs.find(x=>x.name===c.ref);
+    return`<div class="comprow" data-ci="${i}"><span class="${base?'':'miss'}">${esc(c.ref)}${base?'':' · missing'}</span>
+      <label>x<input class="cdx" type="number" step="10" value="${c.dx}" aria-label="x offset of ${esc(c.ref)}"></label>
+      <label>y<input class="cdy" type="number" step="10" value="${c.dy}" aria-label="y offset of ${esc(c.ref)}"></label>
+      <button type="button" class="btn sm cctr" aria-label="Center ${esc(c.ref)} over the width">Center</button>
+      <button type="button" class="btn sm crm" aria-label="Remove ${esc(c.ref)}">✕</button></div>`}).join('')||'<p class="muted small">No components yet.</p>';
+}
+function addComponent(){
+  const g=curGlyph();if(!g)return;
+  const q=$('compRef').value,ref=findGlyph(q),err=$('compErr');err.textContent='';
+  if(!q.trim()){err.textContent='Type a glyph name or a character.';return}
+  if(!ref){err.textContent=`There is no glyph “${q.trim()}” in the font yet. Add it first.`;return}
+  if(ref===g){err.textContent='A glyph cannot contain itself.';return}
+  if(usesGlyph(ref,g.name)){err.textContent=`That would make a loop: ${ref.name} already uses ${g.name}.`;return}
+  checkpoint();g.components.push({ref:ref.name,dx:0,dy:0});commit();$('compRef').value='';renderComp();
+}
 function nudge(dx,dy){
   if(!curGlyph()||!ed.sel.size)return;checkpoint();
   const nodeKeys=new Set([...ed.sel].filter(k=>k.split(':').length===2));
@@ -726,6 +820,7 @@ function renderTextTab(t){
     <svg id="ed" class="edsvg" role="application" aria-label="Glyph editor"></svg>
     <div class="tools" role="toolbar" aria-label="Tools">
       ${tb('pointer','Select  V',icon.pointer)}${tb('pen','Pen  P',icon.pen)}${tb('text','Text  T',icon.text)}${tb('hand','Hand  H · or hold Space',icon.hand)}
+      <button class="tip-right" data-act="components" data-tip="Components · build from other glyphs" aria-label="Components"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="11" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="9.5" y="9.5" width="11" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
       <button class="tip-right" disabled data-tip="Measure · coming later" aria-label="Measure, coming later"><svg viewBox="0 0 24 24">${icon.ruler}</svg></button>
     </div>
     <div class="hintline" id="hint"></div>
@@ -843,6 +938,7 @@ function renderEditor(){
       if(ed.preview||ed.tool==='text'){s+=`<path class="pv" d="${filled}"/>`}
       else{
         s+=`<path class="shape" d="${filled}"/>`;
+        for(const c of componentOutline(g))s+=`<path class="comp" d="${contourD(c,map)}"/>`;
         for(const c of g.contours)s+=`<path class="outline" d="${contourD(c,map)}"/>`;
         if(ed.hover&&ed.hover.kind==='segment'&&!ed.drag){
           const c=g.contours[ed.hover.ci],sg=c&&segments(c)[ed.hover.i];
@@ -1247,7 +1343,7 @@ function cubicToQuads(p0,c1,c2,p3){
 }
 // TrueType contours for one glyph: [[{x,y,on}]]
 function ttContours(g){
-  const cs=g.contours.filter(c=>c.closed&&c.nodes.length>=2);
+  const cs=glyphOutline(g).filter(c=>c.closed&&c.nodes.length>=2);
   const polys=cs.map(c=>flatten(c,8));
   const res=[];
   cs.forEach((c0,i)=>{
@@ -1468,6 +1564,11 @@ document.addEventListener('click',e=>{
   }
   else if(t.dataset.zoom){state.zoomIdx=Math.max(0,Math.min(ZOOMS.length-1,state.zoomIdx+Number(t.dataset.zoom)));render()}
   else if(t.dataset.tool){setTool(t.dataset.tool)}
+  else if(t.dataset.act==='components'){if(curGlyph()){$('compErr').textContent='';$('compRef').value='';renderComp();$('compDlg').showModal()}else toast('Pick a letter that is in the font first.')}
+  else if(t.id==='compClose'){$('compDlg').close()}
+  else if(t.hasAttribute('data-comp-suggest')){applySuggestion(curGlyph())}
+  else if(t.dataset.compAddmark){const ch=t.dataset.compAddmark;if(!glyphFor(ch)){const ng=makeGlyph(ch);font.glyphs.push(ng);save();renderInfo();toast(`Added ${ng.name}. Draw it, then come back to build ${curGlyph().char}.`)}renderComp()}
+  else if(t.classList.contains('cctr')||t.classList.contains('crm')){const g=curGlyph(),i=+t.closest('.comprow').dataset.ci;if(g&&g.components[i]){checkpoint();if(t.classList.contains('crm'))g.components.splice(i,1);else centerComp(g,g.components[i]);commit();renderComp()}}
   else if(t.dataset.ezoom){const[w,h]=canvasSize();zoomAt(w/2,h/2,Number(t.dataset.ezoom));renderEditor();renderEditorBar()}
   else if(t.id==='fitBtn'){fitView();renderEditor();renderEditorBar()}
   else if(t.id==='previewBtn'){ed.preview=!ed.preview;renderEditor();renderEditorBar()}
@@ -1491,7 +1592,7 @@ document.addEventListener('keydown',e=>{
   const c=e.target.closest&&e.target.closest('[data-glyph]');
   if(c&&e.key==='Enter'){e.preventDefault();openGlyph(c.dataset.glyph);return}
   if(e.target.matches&&e.target.matches('[data-tab]')&&e.key==='Enter'){state.active=e.target.dataset.tab;render();return}
-  if(state.active==='grid'||typing||$('addDlg').open||$('expDlg').open)return;
+  if(state.active==='grid'||typing||$('addDlg').open||$('expDlg').open||$('compDlg').open)return;
   const mod=e.metaKey||e.ctrlKey,k=e.key.toLowerCase();
   if(mod&&k==='z'){e.preventDefault();e.shiftKey?redo():undo();return}
   if(mod&&k==='y'){e.preventDefault();redo();return}
@@ -1532,6 +1633,10 @@ document.addEventListener('change',e=>{
     if(el.dataset.metric==='grid'&&v<1)v=NaN;
     if(Number.isFinite(v)){font[el.dataset.metric]=v;save();render()}else el.value=font[el.dataset.metric];
   }
+  if(el.classList&&(el.classList.contains('cdx')||el.classList.contains('cdy'))){
+    const g=curGlyph(),i=+el.closest('.comprow').dataset.ci,v=parseInt(el.value,10);
+    if(g&&g.components[i]&&Number.isFinite(v)){checkpoint();g.components[i][el.classList.contains('cdx')?'dx':'dy']=v;commit()}
+  }
   if(el.id==='kernL'||el.id==='kernR'){
     const t=curTab(),L=layout(t),g=curGlyph(),it=L[t.ai],nb=el.id==='kernL'?L[t.ai-1]:L[t.ai+1],v=parseInt(el.value,10);
     if(g&&nb&&nb.g){if(!Number.isFinite(v)){el.value=0;return}el.id==='kernL'?setKern(nb.g,g,v):setKern(g,nb.g,v);syncActive();renderEditor()}
@@ -1542,7 +1647,7 @@ document.addEventListener('change',e=>{
   }
   if(el.dataset.meta){font[el.dataset.meta]=el.value.trim()||(el.dataset.meta==='family'?'Untitled':'Regular');save();render()}
 });
-document.addEventListener('submit',e=>{if(e.target.id==='noteForm'){e.preventDefault();addNote()}});
+document.addEventListener('submit',e=>{if(e.target.id==='noteForm'){e.preventDefault();addNote()}if(e.target.id==='compForm'){e.preventDefault();addComponent()}});
 document.addEventListener('keydown',e=>{if(e.target.closest&&e.target.closest('#noteForm')&&e.key==='Enter'&&(e.metaKey||e.ctrlKey)){e.preventDefault();addNote()}});
 $('addForm').addEventListener('submit',e=>{
   e.preventDefault();
