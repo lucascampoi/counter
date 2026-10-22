@@ -18,6 +18,7 @@ Open `index.html` in any modern browser, or use the GitHub Pages link of this re
 - **Components**: build a glyph from other glyphs (Á = A + ´). Counter suggests the parts for accented letters, centres the accent and lifts it for capitals. Change the base and every accented letter follows.
 - **Kerning**: set a value for each pair (AV, To…) in the stats box; the line reflows live and the pairs are exported in the font's `kern` table.
 - **Notes per glyph**: leave a note, assign it to someone (*"Cacá, could you draw these?"*), resolve it with ✓. Notes are saved inside the project file, so they travel with it.
+- **Any Unicode character**: glyphs beyond the Basic Multilingual Plane (math letters, historic scripts, emoji) are exported with a format 12 `cmap`.
 - **Export**: a TrueType (`.ttf`) writer built from scratch, no libraries. Cubic curves are converted to quadratics, contour directions are fixed automatically, empty glyphs are left out. The export dialog previews the real font before you download it.
 
 ## Keyboard

@@ -239,7 +239,7 @@ dialog.mid{width:min(440px,92vw)}
       <svg width="20" height="14" viewBox="0 0 20 14"><path d="M0 1h20M0 7h20M0 13h20" stroke="currentColor" stroke-width="1.6"/></svg>
     </button>
     <h1>Counter <small id="fontName"></small></h1>
-    <span class="ver">v0.7</span>
+    <span class="ver">v0.8</span>
     <button class="btn ghost-btn" id="openBtn">Open</button>
     <button class="btn ghost-btn" id="downloadBtn">Download project</button>
     <button class="btn primary" id="exportBtn">Export font</button>
@@ -327,7 +327,8 @@ function autoName(ch){
   if(/^[a-z]$/i.test(ch))return ch;
   const d=ch.normalize('NFD');
   if(d.length===2&&/^[a-z]$/i.test(d[0])&&MARKS[d[1]])return d[0]+MARKS[d[1]];
-  return'uni'+hex(ch.codePointAt(0));
+  const cp=ch.codePointAt(0);
+  return cp>0xFFFF?'u'+hex(cp):'uni'+hex(cp); // AGL: uXXXXX beyond the Basic Multilingual Plane
 }
 function makeGlyph(ch,name){
   const cp=ch.codePointAt(0);
@@ -1392,7 +1393,7 @@ function buildTTF(f){
   const ps=`${family.replace(/[^A-Za-z0-9]/g,'')||'Untitled'}-${style.replace(/[^A-Za-z0-9]/g,'')||'Regular'}`.slice(0,63);
   // glyph set: .notdef, then every drawn glyph and every separator (space). Empty letters are left out
   // so apps fall back to another font instead of showing blanks.
-  const used=f.glyphs.filter(g=>g.unicode<=0xFFFF&&(isDrawn(g)||g.category==='separator'));
+  const used=f.glyphs.filter(g=>isDrawn(g)||g.category==='separator');
   const skipped=f.glyphs.filter(g=>!used.includes(g));
   const nd=Math.round(upm*0.5),m=Math.round(upm*0.05),top=f.capHeight;
   const notdef=[[{x:m,y:0,on:true},{x:m,y:top,on:true},{x:nd-m,y:top,on:true},{x:nd-m,y:0,on:true}],
@@ -1435,7 +1436,7 @@ function buildTTF(f){
   // OS/2 version 4
   const cps=used.map(g=>g.unicode);
   const range=[0,0,0,0],setBit=b=>{range[b>>5]|=(1<<(b&31))>>>0};
-  for(const c of cps){if(c<0x80)setBit(0);else if(c<0x100)setBit(1);else if(c<0x180)setBit(2);else if(c<0x250)setBit(3);else if(c>=0x370&&c<0x400)setBit(7);else if(c>=0x400&&c<0x530)setBit(9)}
+  for(const c of cps){if(c<0x80)setBit(0);else if(c<0x100)setBit(1);else if(c<0x180)setBit(2);else if(c<0x250)setBit(3);else if(c>=0x370&&c<0x400)setBit(7);else if(c>=0x400&&c<0x530)setBit(9);if(c>0xFFFF)setBit(57)}
   const advs=glyphs.map(g=>g.adv).filter(a=>a>0);
   const os2=new BinW();
   os2.u16(4);os2.i16(advs.length?advs.reduce((a,b)=>a+b,0)/advs.length:0);os2.u16(400);os2.u16(5);os2.u16(0);
@@ -1445,7 +1446,7 @@ function buildTTF(f){
   for(let i=0;i<10;i++)os2.u8(0);
   for(const r of range)os2.u32(r>>>0);
   os2.tag('CNTR');os2.u16(0x0040|0x0080);
-  os2.u16(cps.length?Math.min(...cps):0x20);os2.u16(cps.length?Math.max(...cps):0x20);
+  os2.u16(cps.length?Math.min(0xFFFF,...cps):0x20);os2.u16(cps.length?Math.min(0xFFFF,Math.max(...cps)):0x20); // u16 fields: clamp per spec
   os2.i16(f.ascender);os2.i16(f.descender);os2.i16(Math.round(upm*0.2));
   os2.u16(Math.max(bb.yMax,f.ascender));os2.u16(Math.max(-bb.yMin,-f.descender));
   os2.u32(1);os2.u32(0);
@@ -1455,15 +1456,22 @@ function buildTTF(f){
   const hmtx=new BinW();glyphs.forEach((g,i)=>{hmtx.u16(g.adv);hmtx.i16(lsbs[i])});
   tables.hmtx=hmtx.b;
   // cmap: format 4, one segment per character
-  const map=glyphs.map((g,i)=>[g.cp,i]).filter(x=>x[0]!=null).sort((a,b)=>a[0]-b[0]);
+  const all=glyphs.map((g,i)=>[g.cp,i]).filter(x=>x[0]!=null).sort((a,b)=>a[0]-b[0]);
+  const map=all.filter(x=>x[0]<=0xFFFF);
   const segs=[...map.map(([c,gi])=>({s:c,e:c,d:(gi-c+65536)%65536})),{s:0xFFFF,e:0xFFFF,d:1}];
   const sc=segs.length,sr=2*2**Math.floor(Math.log2(sc));
   const f4=new BinW();
   f4.u16(4);f4.u16(16+8*sc);f4.u16(0);f4.u16(sc*2);f4.u16(sr);f4.u16(Math.log2(sr/2));f4.u16(sc*2-sr);
   for(const s of segs)f4.u16(s.e);f4.u16(0);for(const s of segs)f4.u16(s.s);for(const s of segs)f4.u16(s.d);for(const s of segs)f4.u16(0);
+  // format 12 covers the full Unicode range; only needed when a glyph sits beyond U+FFFF
+  const astral=all.some(x=>x[0]>0xFFFF);
+  const f12=new BinW();
+  if(astral){f12.u16(12);f12.u16(0);f12.u32(16+12*all.length);f12.u32(0);f12.u32(all.length);for(const[c,gi]of all){f12.u32(c);f12.u32(c);f12.u32(gi)}}
+  const cmapRecs=astral?[[0,3,'f4'],[0,4,'f12'],[3,1,'f4'],[3,10,'f12']]:[[0,3,'f4'],[3,1,'f4']];
+  const hdr=4+8*cmapRecs.length,cmapOff={f4:hdr,f12:hdr+f4.b.length};
   const cmap=new BinW();
-  cmap.u16(0);cmap.u16(2);cmap.u16(0);cmap.u16(3);cmap.u32(20);cmap.u16(3);cmap.u16(1);cmap.u32(20);
-  cmap.b.push(...f4.b);
+  cmap.u16(0);cmap.u16(cmapRecs.length);for(const[pl,en,t]of cmapRecs){cmap.u16(pl);cmap.u16(en);cmap.u32(cmapOff[t])}
+  cmap.b.push(...f4.b);if(astral)cmap.b.push(...f12.b);
   tables.cmap=cmap.b;
   // name (Windows, English)
   const names=[[1,family],[2,style],[3,`${ps};Counter`],[4,`${family} ${style}`],[5,'Version 1.000'],[6,ps],[11,'Made with Counter']];
