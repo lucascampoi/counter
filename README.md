@@ -24,6 +24,7 @@ Open `index.html` in any modern browser, or use the GitHub Pages link of this re
 |---|---|
 | `V` `P` `T` `H` | Select, Pen, Text, Hand (hold `Space` to pan) |
 | `⌘Z` / `⇧⌘Z` | Undo / redo |
+| `⌘C` `⌘X` `⌘V` | Copy, cut and paste paths (also between glyphs) |
 | `⌘←` / `⌘→` | Previous / next letter in the line |
 | Arrows (`⇧` ×10) | Nudge selected nodes |
 | `Delete` | Delete selected nodes or handles |
