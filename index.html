@@ -171,6 +171,8 @@ header h1 small{font-weight:400;color:var(--muted);font-size:13px;margin-left:8p
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .stats .nb{grid-template-columns:1fr auto 1fr;border-top:1px solid var(--line)}
 .stats .one{grid-template-columns:1fr auto}
+.stats .kr{grid-template-columns:1fr auto 1fr}
+.stats .kr label{white-space:nowrap}
 .nbtn{font:inherit;padding:2px 4px;border-radius:3px;text-align:left;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nbtn.r{text-align:right;justify-self:end}
 .nbtn:hover:not([disabled]){background:var(--chrome)}
@@ -307,7 +309,7 @@ function makeGlyph(ch,name){
 }
 function newFont(){
   const chars=[...'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789.,-:;!?()',' '];
-  return{format:'counter',version:3,family:'Untitled',style:'Regular',upm:1000,ascender:800,capHeight:700,xHeight:500,descender:-200,grid:10,glyphs:chars.map(c=>makeGlyph(c))};
+  return{format:'counter',version:3,family:'Untitled',style:'Regular',upm:1000,ascender:800,capHeight:700,xHeight:500,descender:-200,grid:10,kerning:{},glyphs:chars.map(c=>makeGlyph(c))};
 }
 const pt=(p)=>p?{x:Math.round(+p.x||0),y:Math.round(+p.y||0)}:null;
 // convert v2 UFO-style points into nodes with handles
@@ -325,6 +327,9 @@ function pointsToNodes(c){
 }
 function normalize(f){
   f.version=3;if(!(f.grid>0))f.grid=10;
+  // kerning: {"leftName:rightName": value in font units}
+  const kern={};if(f.kerning&&typeof f.kerning==='object'&&!Array.isArray(f.kerning))for(const[k,v]of Object.entries(f.kerning)){const n=Math.round(+v);if(/^[^:]+:[^:]+$/.test(k)&&n)kern[k]=n}
+  f.kerning=kern;
   for(const g of f.glyphs){
     if(!Array.isArray(g.contours))g.contours=[];
     g.contours=g.contours.filter(c=>c&&(Array.isArray(c.nodes)||Array.isArray(c.points))).map(c=>{
@@ -472,7 +477,15 @@ function tabLabel(t){
 }
 function saveTabs(){try{localStorage.setItem('counter.tabs',JSON.stringify(state.tabs.filter(t=>!t.fixed).map(t=>({text:t.text,ai:t.ai,caret:t.caret}))))}catch(e){}}
 function loadTabs(){try{const a=JSON.parse(localStorage.getItem('counter.tabs'));if(Array.isArray(a))for(const x of a)if(x&&typeof x.text==='string'){const n=[...x.text].length;state.tabs.push({id:'t'+(tabSeq++),text:x.text,ai:x.ai|0,caret:Math.min(n,x.caret??n)})}}catch(e){}}
-function layout(t){let x=0;return[...t.text].map((ch,i)=>{const g=glyphFor(ch),it={i,ch,g,x,adv:g?g.advance:600};x+=it.adv;return it})}
+// ---------- Kerning: a value per pair of glyphs, added between them in every line and in the exported font ----------
+const kernKey=(a,b)=>a.name+':'+b.name;
+const kernVal=(a,b)=>a&&b?(font.kerning[kernKey(a,b)]|0):0;
+function setKern(a,b,v){if(!a||!b)return;const k=kernKey(a,b);if(v)font.kerning[k]=v;else delete font.kerning[k];save()}
+function layout(t){
+  const L=[...t.text].map((ch,i)=>{const g=glyphFor(ch);return{i,ch,g,x:0,adv:g?g.advance:600,kern:0}});
+  let x=0;L.forEach((it,i)=>{if(i){it.kern=kernVal(L[i-1].g,it.g);x+=it.kern}it.x=x;x+=it.adv});
+  return L;
+}
 
 function renderTabs(){
   $('tabs').innerHTML=state.tabs.map(t=>{const l=tabLabel(t);return`<div class="tab" role="tab" tabindex="0" aria-selected="${t.id===state.active}" data-tab="${esc(t.id)}">${esc(l)}${t.fixed?'':`<button class="x" data-close="${esc(t.id)}" aria-label="Close ${esc(l)}">×</button>`}</div>`}).join('')+
@@ -775,6 +788,7 @@ function renderStats(){
   }
   box.innerHTML=`<div><span>${esc(g.name)}</span><span class="r">U+${hex(g.unicode)}</span></div>
     <div><span id="stL">LSB –</span><label>width <input id="stW" type="number" step="1" min="0" value="${g.advance}" aria-label="Advance width"></label><span class="r" id="stR">RSB –</span></div>
+    <div class="kr"><label class="tip-up" data-tip="Kerning with the previous letter">${nm(prev)} <input id="kernL" type="number" step="10" value="${prev&&prev.g?kernVal(prev.g,g):0}" ${prev&&prev.g?'':'disabled'} aria-label="Kerning between previous letter and ${esc(g.name)}"></label><span class="muted">kern</span><label class="r tip-up-end" data-tip="Kerning with the next letter"><input id="kernR" type="number" step="10" value="${next&&next.g?kernVal(g,next.g):0}" ${next&&next.g?'':'disabled'} aria-label="Kerning between ${esc(g.name)} and next letter"> ${nm(next)}</label></div>
     <div class="nb"><button class="nbtn tip-up" data-step="-1" data-tip="Previous letter  ⌘←" aria-label="Edit previous letter" ${prev?'':'disabled'}>‹ ${nm(prev)}</button><span class="muted">${t.ai+1}/${L.length}</span><button class="nbtn r tip-up-end" data-step="1" data-tip="Next letter  ⌘→" aria-label="Edit next letter" ${next?'':'disabled'}>${nm(next)} ›</button></div>`;
 }
 
@@ -1365,6 +1379,16 @@ function buildTTF(f){
   // post 3.0 (no glyph names)
   const post=new BinW();post.u32(0x00030000);post.u32(0);post.i16(-Math.round(upm*0.1));post.i16(Math.round(upm*0.05));for(let i=0;i<5;i++)post.u32(0);
   tables.post=post.b;
+  // kern (format 0): pairs between exported glyphs, sorted by glyph index
+  const gi={};used.forEach((g,i)=>gi[g.name]=i+1);
+  const pairs=Object.entries(f.kerning||{}).map(([k,v])=>{const[a,b]=k.split(':');return[gi[a],gi[b],v]}).filter(p=>p[0]&&p[1]&&p[2]).sort((p,q)=>(p[0]-q[0])||(p[1]-q[1])).slice(0,10920);
+  if(pairs.length){
+    const n=pairs.length,es=Math.floor(Math.log2(n)),sr=6*2**es;
+    const kern=new BinW();kern.u16(0);kern.u16(1);
+    kern.u16(0);kern.u16(14+6*n);kern.u16(0x0001);kern.u16(n);kern.u16(sr);kern.u16(es);kern.u16(n*6-sr);
+    for(const[a,b,v]of pairs){kern.u16(a);kern.u16(b);kern.i16(v)}
+    tables.kern=kern.b;
+  }
   // assemble
   const tags=Object.keys(tables).sort();
   const nt=tags.length,es=Math.floor(Math.log2(nt)),srange=16*2**es;
@@ -1378,7 +1402,7 @@ function buildTTF(f){
   const adj=(0xB1B0AFBA-checksum(out.b)+4294967296)%4294967296;
   const ho=recs.find(r=>r.t==='head').off+8;
   bytes[ho]=adj>>>24&255;bytes[ho+1]=adj>>>16&255;bytes[ho+2]=adj>>>8&255;bytes[ho+3]=adj&255;
-  return{buffer:bytes.buffer,included:used,skipped,filename:`${ps}.ttf`};
+  return{buffer:bytes.buffer,included:used,skipped,kernPairs:pairs.length,filename:`${ps}.ttf`};
 }
 
 // ---------- Export dialog with live preview ----------
@@ -1394,7 +1418,7 @@ async function openExport(){
   }
   try{lastBuild=buildTTF(font)}catch(err){lastBuild=null;$('expErr').textContent='The font could not be built: '+err.message;$('expDl').disabled=true;d.showModal();return}
   const kb=(lastBuild.buffer.byteLength/1024).toFixed(1);
-  $('expInfo').textContent=`${lastBuild.included.filter(isDrawn).length} drawn glyphs · ${lastBuild.skipped.length} empty glyphs left out · ${kb} KB`;
+  $('expInfo').textContent=`${lastBuild.included.filter(isDrawn).length} drawn glyphs · ${lastBuild.skipped.length} empty glyphs left out${lastBuild.kernPairs?` · ${lastBuild.kernPairs} kerning pair${lastBuild.kernPairs>1?'s':''}`:''} · ${kb} KB`;
   $('expDl').disabled=false;
   d.showModal();
   const fam='CounterPreview'+(++previewSeq);
@@ -1507,6 +1531,10 @@ document.addEventListener('change',e=>{
     let v=parseInt(el.value,10);
     if(el.dataset.metric==='grid'&&v<1)v=NaN;
     if(Number.isFinite(v)){font[el.dataset.metric]=v;save();render()}else el.value=font[el.dataset.metric];
+  }
+  if(el.id==='kernL'||el.id==='kernR'){
+    const t=curTab(),L=layout(t),g=curGlyph(),it=L[t.ai],nb=el.id==='kernL'?L[t.ai-1]:L[t.ai+1],v=parseInt(el.value,10);
+    if(g&&nb&&nb.g){if(!Number.isFinite(v)){el.value=0;return}el.id==='kernL'?setKern(nb.g,g,v):setKern(g,nb.g,v);syncActive();renderEditor()}
   }
   if(el.id==='stW'){
     const g=curGlyph(),v=parseInt(el.value,10);

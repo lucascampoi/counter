@@ -15,6 +15,7 @@ Open `index.html` in any modern browser, or use the GitHub Pages link of this re
 - **Overlaps merge**: shapes that overlap join like a union; only a shape fully inside another becomes a counter.
 - **Text tabs**: every tab is a line of text. Type letters straight into the canvas with the Text tool (`T`) and edit any letter in context. A live preview strip in the bottom bar, resizable from 48 to 100 px.
 - **Spacing**: drag the side lines to change the left and right sidebearings, or type the advance width.
+- **Kerning**: set a value for each pair (AV, To…) in the stats box; the line reflows live and the pairs are exported in the font's `kern` table.
 - **Notes per glyph**: leave a note, assign it to someone (*"Cacá, could you draw these?"*), resolve it with ✓. Notes are saved inside the project file, so they travel with it.
 - **Export**: a TrueType (`.ttf`) writer built from scratch, no libraries. Cubic curves are converted to quadratics, contour directions are fixed automatically, empty glyphs are left out. The export dialog previews the real font before you download it.
 
@@ -42,7 +43,8 @@ Exported fonts are checked by loading them in Chrome (which rejects malformed fo
 ## Roadmap
 
 - [x] Glyph grid, editor, curves, text tester, TrueType export, notes
-- [ ] Kerning (GPOS)
+- [x] Kerning pairs (`kern` table)
+- [ ] Kerning in GPOS and kerning classes
 - [ ] Components for accented letters
 - [ ] Import existing `.ttf`/`.otf` and UFO
 - [ ] Masters and variable fonts
