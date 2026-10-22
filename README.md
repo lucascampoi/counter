@@ -57,6 +57,7 @@ Exported fonts are checked by loading them in Chrome (which rejects malformed fo
 - [ ] Import existing `.ttf`/`.otf` and UFO
 - [ ] Masters and variable fonts
 - [ ] Real-time collaboration
+- [x] Controls screen, collapsible font panel, bounded panning
 
 ## About this project
 
@@ -65,6 +66,10 @@ Counter is a learning project. I'm building it to learn how code and design come
 The code is written with [Claude](https://claude.ai), Anthropic's AI assistant, under my direction: I define the product, design the interface in Figma and review every step, and Claude writes most of the code. I'm saying this up front so anyone reading or contributing knows how it was made.
 
 If you'd like to talk about the project, [get in touch through my website](https://lucascampoi.me).
+
+## Contributing
+
+Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) to run Counter locally, find your way around the code and open a pull request.
 
 ## Credits
 
