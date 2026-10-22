@@ -50,7 +50,8 @@ Exported fonts are checked by loading them in Chrome (which rejects malformed fo
 ## Credits
 
 - Product and design: **Lucas Campoi**
-- Original 2020 concept (*Tenez*): Lucas Campoi, Felipe Casaprima, Rodrigo Saiani
+- Original 2020 concept: Lucas Campoi
+- Credits: Felipe Casaprima, Rodrigo Saiani
 - Notes per glyph: idea by Rodrigo Saiani
 - Typeface of the interface: IBM Plex (SIL Open Font License)
 
