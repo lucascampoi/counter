@@ -47,9 +47,18 @@ Exported fonts are checked by loading them in Chrome (which rejects malformed fo
 - [ ] Masters and variable fonts
 - [ ] Real-time collaboration
 
+## About this project
+
+Counter is a learning project. I'm building it to learn how code and design come together, and to grow my own skills at that intersection.
+
+The code is written with [Claude](https://claude.ai), Anthropic's AI assistant, under my direction: I define the product, design the interface in Figma and review every step, and Claude writes most of the code. I'm saying this up front so anyone reading or contributing knows how it was made.
+
+If you'd like to talk about the project, [get in touch through my website](https://lucascampoi.me).
+
 ## Credits
 
 - Product and design: **Lucas Campoi**
+- Code: written with Claude (Anthropic), directed and reviewed by Lucas Campoi
 - Original 2020 concept: Lucas Campoi
 - Credits: Felipe Casaprima, Rodrigo Saiani
 - Notes per glyph: idea by Rodrigo Saiani
