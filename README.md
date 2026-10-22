@@ -19,6 +19,8 @@ Open `index.html` in any modern browser, or use the GitHub Pages link of this re
 - **Kerning**: set a value for each pair (AV, To…) in the stats box; the line reflows live and the pairs are exported in the font's `kern` table.
 - **Notes per glyph**: leave a note, assign it to someone (*"Cacá, could you draw these?"*), resolve it with ✓. Notes are saved inside the project file, so they travel with it.
 - **Any Unicode character**: glyphs beyond the Basic Multilingual Plane (math letters, historic scripts, emoji) are exported with a format 12 `cmap`.
+- **Controls screen**: press `?` (or the `?` under the tools) for a game-style map of every tool's keys and mouse moves, with the current tool highlighted.
+- **Room to draw**: hide the font panel with `⌘\`; panning stops at the edges of the line, so you never get lost on the canvas.
 - **Export**: a TrueType (`.ttf`) writer built from scratch, no libraries. Cubic curves are converted to quadratics, contour directions are fixed automatically, empty glyphs are left out. The export dialog previews the real font before you download it.
 
 ## Keyboard
@@ -30,8 +32,12 @@ Open `index.html` in any modern browser, or use the GitHub Pages link of this re
 | `⌘C` `⌘X` `⌘V` | Copy, cut and paste paths (also between glyphs) |
 | `⌘←` / `⌘→` | Previous / next letter in the line |
 | Arrows (`⇧` ×10) | Nudge selected nodes |
+| `⌥` Click a node | Straight ↔ curve node |
+| `⌥` Click a segment | Line ↔ curve segment |
 | `Delete` | Delete selected nodes or handles |
 | `0` | Fit the line |
+| `⌘\` | Show / hide the font panel |
+| `?` | Controls screen |
 | `⌘↵` | Send a note |
 
 ## Project file

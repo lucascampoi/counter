@@ -45,6 +45,8 @@ header h1 small{font-weight:400;color:var(--muted);font-size:13px;margin-left:8p
 .btn.primary{background:var(--accent);color:var(--on-accent);font-weight:600}
 .ver{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .body{display:grid;grid-template-columns:57px 200px 1fr;min-height:0;position:relative}
+.body.hide-info{grid-template-columns:57px 0 1fr}
+.body.hide-info .info{display:none}
 .rail{border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:22px;padding-top:16px;z-index:6}
 .rail button{width:32px;height:32px;display:grid;place-items:center;border-radius:6px}
 .rail button:hover:not([disabled]){background:var(--chrome)}
@@ -186,7 +188,7 @@ header h1 small{font-weight:400;color:var(--muted);font-size:13px;margin-left:8p
 .tools button[aria-pressed="true"]{color:var(--accent);background:var(--accent-soft)}
 .tools button[disabled]{opacity:.3;cursor:default}
 .tools svg{width:20px;height:20px}
-.hintline{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;pointer-events:none;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
+.hintline-unused{position:absolute;top:10px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;pointer-events:none;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
 .stats{font-family:var(--mono);font-size:11px;border:1px solid var(--line);width:232px;font-variant-numeric:tabular-nums;background:var(--bg)}
 .stats div{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;padding:5px 8px;gap:6px}
 .stats div:first-child{background:var(--chrome);grid-template-columns:1fr auto}
@@ -202,6 +204,29 @@ dialog .row{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
 dialog .err{color:var(--danger);font-size:11px;min-height:14px;margin-top:6px}
 dialog.wide{width:min(760px,92vw)}
 dialog.mid{width:min(440px,92vw)}
+/* Controls: deliberately one dark, game-like look in both themes */
+.helpdot{width:24px!important;height:24px!important;margin:4px auto 0;border-radius:50%!important;border:1px solid var(--line)!important;font:600 12px var(--mono);color:var(--muted)}
+.helpdot:hover{color:var(--accent);border-color:var(--accent)!important}
+dialog.keys{width:min(1080px,94vw);max-height:88vh;overflow:auto;padding:28px;background:#121117;color:#ecebf0;border:1px solid #2f2d36;border-radius:12px;box-shadow:0 24px 64px rgba(0,0,0,.45)}
+dialog.keys::backdrop{background:rgba(10,9,14,.6);backdrop-filter:blur(3px)}
+.khead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+.kover{margin:0;font:500 11px var(--mono);letter-spacing:.2em;text-transform:uppercase;color:#a47bff}
+.khead h2{margin:4px 0 0;font:600 28px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.khint{margin:0;color:#8e8b99;font:12px var(--mono)}
+.kgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.kcard{background:#1b1a21;border:1px solid #2f2d36;border-radius:10px;padding:14px 16px}
+.kcard.current{border-color:#a47bff;box-shadow:0 0 0 1px #a47bff inset,0 0 24px rgba(164,123,255,.18)}
+.kcard .khd{display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #2f2d36}
+.kname{font:600 13px var(--mono);letter-spacing:.12em;text-transform:uppercase}
+.kyou{margin-left:auto;font:500 10px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:#120d1f;background:#a47bff;padding:3px 7px;border-radius:999px}
+.kcard ul{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.kcard li{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:10px;align-items:center}
+.kkeys{display:flex;flex-wrap:wrap;align-items:center;gap:4px}
+.kkeys i{font-style:normal;color:#5d5a68;font-size:11px}
+.klabel{color:#c6c4cf;font-size:12px}
+dialog.keys kbd{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;font:600 11px var(--mono);color:#f2f2f4;background:linear-gradient(#34313e,#28262f);border:1px solid #45424f;border-bottom:3px solid #0d0c11;border-radius:5px}
+dialog.keys kbd.mouse{color:#120d1f;background:linear-gradient(#b894ff,#a47bff);border-color:#c4a6ff;border-bottom-color:#5b3bb0}
+.ctx{font:11px var(--mono);color:#8e8b99}
 .comp{fill:none;stroke:var(--accent);stroke-width:1.2;stroke-dasharray:5 4}
 .complist{display:grid;gap:6px;margin:12px 0}
 .comprow{display:grid;grid-template-columns:1fr auto auto auto auto;gap:6px;align-items:center;font-family:var(--mono);font-size:12px;padding:6px 8px;border:1px solid var(--line);border-radius:4px}
@@ -227,7 +252,7 @@ dialog.mid{width:min(440px,92vw)}
   .info{display:none}
   .body.show-info .info{display:block;position:absolute;left:48px;top:0;bottom:0;width:220px;z-index:5;box-shadow:4px 0 12px rgba(0,0,0,.12)}
   .bar{grid-template-columns:auto minmax(0,1fr) auto}
-  .bar .addbtn span,.ver,#openBtn,#downloadBtn,.hintline{display:none}
+  .bar .addbtn span,.ver,#openBtn,#downloadBtn{display:none}
 }
 </style>
 </head>
@@ -239,7 +264,7 @@ dialog.mid{width:min(440px,92vw)}
       <svg width="20" height="14" viewBox="0 0 20 14"><path d="M0 1h20M0 7h20M0 13h20" stroke="currentColor" stroke-width="1.6"/></svg>
     </button>
     <h1>Counter <small id="fontName"></small></h1>
-    <span class="ver">v0.8</span>
+    <span class="ver">v0.9</span>
     <button class="btn ghost-btn" id="openBtn">Open</button>
     <button class="btn ghost-btn" id="downloadBtn">Download project</button>
     <button class="btn primary" id="exportBtn">Export font</button>
@@ -250,7 +275,7 @@ dialog.mid{width:min(440px,92vw)}
       <button class="tip-right" aria-pressed="true" data-tip="Glyphs" aria-label="Glyphs" data-rail="glyphs"><svg viewBox="0 0 24 24"><g fill="currentColor"><circle cx="5" cy="5" r="1.6"/><circle cx="12" cy="5" r="1.6"/><circle cx="19" cy="5" r="1.6"/><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/><circle cx="5" cy="19" r="1.6"/><circle cx="12" cy="19" r="1.6"/><circle cx="19" cy="19" r="1.6"/></g></svg></button>
       <button class="tip-right" aria-pressed="false" data-tip="New text tab" aria-label="New text tab" data-rail="text"><svg viewBox="0 0 24 24"><path d="M4 8V5h16v3M12 5v15M8 20h8" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
       <button class="tip-right" aria-pressed="false" data-tip="Notes" aria-label="Notes" data-rail="notes"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H10l-4 4v-4H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span class="rbadge" id="notesBadge" hidden></span></button>
-      <button class="tip-right" aria-pressed="false" data-tip="Font info" aria-label="Font info" data-rail="info"><svg viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="1.8" fill="currentColor"/><path d="M8 10h4v10M8 20h8" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
+      <button class="tip-right" aria-pressed="false" data-tip="Font panel  ⌘\" aria-label="Show or hide the font panel" data-rail="info"><svg viewBox="0 0 24 24"><circle cx="12" cy="4.5" r="1.8" fill="currentColor"/><path d="M8 10h4v10M8 20h8" fill="none" stroke="currentColor" stroke-width="2.2"/></svg></button>
     </nav>
     <aside class="info" id="info"></aside>
     <main class="main">
@@ -272,6 +297,11 @@ dialog.mid{width:min(440px,92vw)}
     <div class="err" id="addErr"></div>
     <div class="row"><button type="button" class="btn" id="addCancel">Cancel</button><button class="btn primary" type="submit">Add glyph</button></div>
   </form>
+</dialog>
+
+<dialog id="keysDlg" class="keys" aria-labelledby="keysTitle">
+  <div class="khead"><div><p class="kover">Counter</p><h2 id="keysTitle">Controls</h2></div><p class="khint">Press <kbd>?</kbd> anytime · <kbd>Esc</kbd> to close</p></div>
+  <div class="kgrid" id="keysGrid"></div>
 </dialog>
 
 <dialog id="compDlg" class="mid" aria-labelledby="compTitle">
@@ -439,7 +469,7 @@ const fontMap=p=>[p.x,p.y];
 
 // ---------- UI state ----------
 const ZOOMS=[60,80,100,120,150,180,220];
-const state={cat:'all',script:'all',filter:'all',query:'',zoomIdx:2,selected:null,tabs:[{id:'grid',label:'Glyphs',fixed:true}],active:'grid',showInfo:false,showNotes:false};
+const state={cat:'all',script:'all',filter:'all',query:'',zoomIdx:2,selected:null,tabs:[{id:'grid',label:'Glyphs',fixed:true}],active:'grid',showInfo:false,showNotes:false,hideInfo:(()=>{try{return localStorage.getItem('counter.hideInfo')==='1'}catch(e){return false}})()};
 // ---------- Notes: a small thread per glyph, saved inside the project file ----------
 const openNotes=g=>(g.notes||[]).filter(n=>!n.resolved).length;
 function me(){try{return localStorage.getItem('counter.author')||''}catch(e){return''}}
@@ -562,12 +592,33 @@ function ref(k){
   if(!n)return null;
   return{c,n,h,ci:+ci,ni:+ni,p:h?n[h]:n};
 }
-const TOOL_HINT={
-  text:'Click in the line to place the cursor · type to add letters · Backspace deletes · Esc returns to Select',
-  pointer:'Drag nodes or handles · Double-click toggles smooth · Alt-click a segment: line ↔ curve · ⌘C ⌘X ⌘V copy paths · click another letter to edit it',
-  pen:'Click for a corner · drag for a curve · click a segment to insert a node · click the first node to close · Esc finishes',
-  hand:'Drag to pan · scroll to pan · ⌘/Ctrl + scroll to zoom'
-};
+// ---------- Controls: a game-style keyboard and mouse sheet (press ?) ----------
+const MAC=/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent);
+const MODK=MAC?'⌘':'Ctrl',ALTK=MAC?'⌥':'Alt';
+const CONTROLS=[
+  {tool:'pointer',name:'Select',key:'V',rows:[
+    [['Click'],'Select a node or handle'],[['⇧','Click'],'Add to the selection'],[['Drag'],'Move nodes and handles'],[['Drag','empty'],'Box select'],
+    [['Double-click'],'Smooth ↔ corner node'],[[ALTK,'Click','node'],'Straight ↔ curve node'],[[ALTK,'Click','segment'],'Line ↔ curve segment'],
+    [['Drag','side line'],'Change spacing'],[['←','/','→','/','↑','/','↓'],'Nudge 1 · ⇧ 10'],[['⌫'],'Delete selection']]},
+  {tool:'pen',name:'Pen',key:'P',rows:[
+    [['Click'],'Corner node'],[['Drag'],'Curve node'],[['⇧'],'Snap to 45°'],[['Click','first node'],'Close the path'],[['Click','segment'],'Insert a node'],[['Esc'],'Finish the path']]},
+  {tool:'text',name:'Text',key:'T',rows:[
+    [['Click','line'],'Place the cursor'],[['Type'],'Add letters'],[['⌫'],'Delete before cursor'],[['←','/','→'],'Move the cursor'],[['Esc'],'Back to Select']]},
+  {tool:'hand',name:'Hand',key:'H',rows:[
+    [['Drag'],'Pan'],[['Space','hold'],'Hand from any tool'],[['Scroll'],'Pan'],[[MODK,'Scroll'],'Zoom'],[['0'],'Fit the line']]},
+  {tool:'all',name:'Everywhere',key:'',rows:[
+    [[MODK,'Z'],'Undo'],[['⇧',MODK,'Z'],'Redo'],[[MODK,'C','/','X','/','V'],'Copy, cut, paste paths'],[[MODK,'←','/','→'],'Previous / next letter'],[[MODK,'\\'],'Show / hide font panel'],[['?'],'This screen']]}];
+const MOUSEWORDS=new Set(['Click','Double-click','Drag','Scroll','Type']);
+// keys joined with + (press together); '/' marks alternatives (either key)
+function combo(keys,cap){let h='';keys.forEach((k,i)=>{if(k==='/'){h+='<i>/</i>';return}if(i&&keys[i-1]!=='/')h+='<i>+</i>';h+=cap(k)});return h}
+function renderControls(){
+  const cur=state.active==='grid'?null:ed.tool;
+  const cap=k=>MOUSEWORDS.has(k)?`<kbd class="mouse">${k}</kbd>`:/^[a-z]/.test(k)?`<span class="ctx">${esc(k)}</span>`:`<kbd>${esc(k)}</kbd>`;
+  $('keysGrid').innerHTML=CONTROLS.map(c=>`<section class="kcard${c.tool===cur?' current':''}">
+    <div class="khd"><span class="kname">${c.name}</span>${c.key?`<kbd>${c.key}</kbd>`:''}${c.tool===cur?'<span class="kyou">Current tool</span>':''}</div>
+    <ul>${c.rows.map(([keys,label])=>`<li><span class="kkeys">${combo(keys,cap)}</span><span class="klabel">${label}</span></li>`).join('')}</ul></section>`).join('');
+}
+function openControls(){renderControls();const d=$('keysDlg');if(!d.open)d.showModal();try{localStorage.setItem('counter.seenControls','1')}catch(e){}}
 
 // keep ed in sync with the active letter of the current tab
 function syncActive(){
@@ -690,6 +741,21 @@ function alignSmooth(n,keep){
   const dx=n.x-n[keep].x,dy=n.y-n[keep].y,L=Math.hypot(dx,dy);if(!L)return;
   const len=Math.hypot(n[other].x-n.x,n[other].y-n.y);
   n[other]={x:Math.round(n.x+dx/L*len),y:Math.round(n.y+dy/L*len)};
+}
+// ⌥-click a node: corner without handles -> smooth curve point; node with handles -> plain corner
+function toggleNodeCurve(key){
+  const r=ref(key);if(!r||r.h)return;
+  const c=r.c,N=c.nodes,i=r.ni,n=r.n;
+  checkpoint();
+  if(n.in||n.out){n.in=null;n.out=null;n.smooth=false;commit();toast('Corner point');return}
+  const prev=i>0?N[i-1]:(c.closed?N[N.length-1]:null),next=i<N.length-1?N[i+1]:(c.closed?N[0]:null);
+  const a=prev||n,b=next||n;let dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy);
+  if(!L){commit();return}
+  dx/=L;dy/=L;
+  const lp=prev?Math.hypot(n.x-prev.x,n.y-prev.y)/3:0,ln=next?Math.hypot(next.x-n.x,next.y-n.y)/3:0;
+  n.in=prev?{x:Math.round(n.x-dx*lp),y:Math.round(n.y-dy*lp)}:null;
+  n.out=next?{x:Math.round(n.x+dx*ln),y:Math.round(n.y+dy*ln)}:null;
+  n.smooth=!!(n.in&&n.out);commit();toast('Curve point');
 }
 function toggleSmooth(key){
   const r=ref(key);if(!r||r.h)return;
@@ -823,8 +889,8 @@ function renderTextTab(t){
       ${tb('pointer','Select  V',icon.pointer)}${tb('pen','Pen  P',icon.pen)}${tb('text','Text  T',icon.text)}${tb('hand','Hand  H · or hold Space',icon.hand)}
       <button class="tip-right" data-act="components" data-tip="Components · build from other glyphs" aria-label="Components"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="11" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="9.5" y="9.5" width="11" height="11" rx="1" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
       <button class="tip-right" disabled data-tip="Measure · coming later" aria-label="Measure, coming later"><svg viewBox="0 0 24 24">${icon.ruler}</svg></button>
+      <button class="tip-right helpdot" data-act="controls" data-tip="Controls  ?" aria-label="Show controls">?</button>
     </div>
-    <div class="hintline" id="hint"></div>
     <div class="stats" id="stats"></div>
     <textarea id="typer" aria-label="Type letters into the line" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
   </div>`;
@@ -888,9 +954,23 @@ function renderStats(){
     <div class="nb"><button class="nbtn tip-up" data-step="-1" data-tip="Previous letter  ⌘←" aria-label="Edit previous letter" ${prev?'':'disabled'}>‹ ${nm(prev)}</button><span class="muted">${t.ai+1}/${L.length}</span><button class="nbtn r tip-up-end" data-step="1" data-tip="Next letter  ⌘→" aria-label="Edit next letter" ${next?'':'disabled'}>${nm(next)} ›</button></div>`;
 }
 
+// Keep the line in reach. When the line fits on screen it can't leave it; when zoomed in past
+// the screen, panning stops at the line's edges. Vertically the box runs ascender→descender.
+function clampAxis(start,size,view,m){
+  // start: screen position of the box's first edge, size: box size on screen
+  if(size<=view-2*m)return Math.min(view-m-size,Math.max(m,start));
+  return Math.min(m,Math.max(view-m-size,start));
+}
+function clampView(v,t){
+  if(!v||!t)return;const[W,Hh]=canvasSize();
+  const L=layout(t),total=L.length?L.at(-1).x+L.at(-1).adv:font.upm;
+  const top=v.ty-font.ascender*v.scale,h=(font.ascender-font.descender)*v.scale;
+  v.ty+=clampAxis(top,h,Hh,40)-top;
+  v.tx=clampAxis(v.tx,total*v.scale,W,96);
+}
 function renderEditor(){
   const t=curTab(),svg=$('ed');if(!t||!svg)return;
-  syncActive();
+  syncActive();clampView(V(),t);
   const g=curGlyph(),L=layout(t);
   const[W,Hh]=canvasSize(),v=V();
   const AX=x=>v.tx+x*v.scale,X=x=>AX(ed.ox+x),Y=y=>v.ty-y*v.scale,map=p=>[X(p.x),Y(p.y)];
@@ -988,7 +1068,6 @@ function renderEditor(){
   if(tool==='pointer'&&ed.hover&&ed.hover.kind==='letter')cur='pointer';
   svg.style.cursor=cur;
   document.querySelectorAll('[data-tool]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tool===ed.tool));
-  $('hint').textContent=TOOL_HINT[tool];
   if(g){
     const empty=!isDrawn(g);
     if($('stL'))$('stL').textContent='LSB '+(empty?'–':g.lsb);
@@ -1015,6 +1094,7 @@ function onDown(e){
   if(tool==='pen')return penDown(e,sx,sy,hit);
   // pointer
   if(hit&&hit.kind==='segment'&&e.altKey){toggleSegment(hit.ci,hit.i);return}
+  if(hit&&hit.kind==='node'&&e.altKey){ed.sel=new Set([hit.key]);toggleNodeCurve(hit.key);return}
   if(hit&&hit.kind==='sb'){ed.drag={type:'sb',which:hit.which,sx,orig:JSON.stringify(g.contours),adv:g.advance,pushed:false};renderEditor();return}
   if(hit&&(hit.kind==='node'||hit.kind==='handle')){
     if(e.shiftKey){ed.sel.has(hit.key)?ed.sel.delete(hit.key):ed.sel.add(hit.key)}
@@ -1232,9 +1312,16 @@ function renderBar(){
   <div class="zoom"><button class="tip-up-end" data-zoom="-1" data-tip="Smaller cells" aria-label="Smaller cells" ${state.zoomIdx===0?'disabled':''}>−</button><output aria-live="polite">${z}%</output><button class="tip-up-end" data-zoom="1" data-tip="Larger cells" aria-label="Larger cells" ${state.zoomIdx===ZOOMS.length-1?'disabled':''}>+</button></div>`;
 }
 
+function toggleFontPanel(){
+  if(innerWidth>720){state.hideInfo=!state.hideInfo;try{localStorage.setItem('counter.hideInfo',state.hideInfo?'1':'')}catch(e){}}
+  else state.showInfo=!state.showInfo;
+  render();
+}
 function render(){
   document.documentElement.style.setProperty('--cell',Math.round(ZOOMS[state.zoomIdx]*1.1)+'px');
   $('body').classList.toggle('show-info',state.showInfo);
+  $('body').classList.toggle('hide-info',state.hideInfo);
+  const ib=document.querySelector('[data-rail="info"]');if(ib)ib.setAttribute('aria-pressed',innerWidth>720?!state.hideInfo:state.showInfo);
   renderInfo();
   const t=state.tabs.find(x=>x.id===state.active);
   if(!t){state.active='grid'}
@@ -1585,7 +1672,8 @@ document.addEventListener('click',e=>{
   else if(t.id==='redoBtn'){redo()}
   else if(t.id==='addBtn'){$('addErr').textContent='';$('addChar').value='';$('addName').value='';$('addDlg').showModal();$('addChar').focus()}
   else if(t.id==='addCancel'){$('addDlg').close()}
-  else if(t.id==='menuBtn'||t.dataset.rail==='info'){state.showInfo=!state.showInfo;render()}
+  else if(t.id==='menuBtn'||t.dataset.rail==='info'){toggleFontPanel()}
+  else if(t.dataset.act==='controls'){openControls()}
   else if(t.dataset.rail==='glyphs'){state.active='grid';render()}
   else if(t.id==='downloadBtn'){downloadProject()}
   else if(t.id==='exportBtn'){openExport()}
@@ -1600,7 +1688,9 @@ document.addEventListener('keydown',e=>{
   const c=e.target.closest&&e.target.closest('[data-glyph]');
   if(c&&e.key==='Enter'){e.preventDefault();openGlyph(c.dataset.glyph);return}
   if(e.target.matches&&e.target.matches('[data-tab]')&&e.key==='Enter'){state.active=e.target.dataset.tab;render();return}
-  if(state.active==='grid'||typing||$('addDlg').open||$('expDlg').open||$('compDlg').open)return;
+  if(!typing&&e.key==='?'&&!$('addDlg').open){e.preventDefault();const d=$('keysDlg');d.open?d.close():openControls();return}
+  if((e.metaKey||e.ctrlKey)&&e.key==='\\'&&!typing){e.preventDefault();toggleFontPanel();return}
+  if(state.active==='grid'||typing||$('addDlg').open||$('keysDlg').open||$('expDlg').open||$('compDlg').open)return;
   const mod=e.metaKey||e.ctrlKey,k=e.key.toLowerCase();
   if(mod&&k==='z'){e.preventDefault();e.shiftKey?redo():undo();return}
   if(mod&&k==='y'){e.preventDefault();redo();return}
@@ -1672,8 +1762,10 @@ $('addForm').addEventListener('submit',e=>{
   $('addDlg').close();state.selected=g.name;state.cat='all';state.script='all';state.filter='all';state.query='';render();
   document.querySelector(`[data-glyph="${CSS.escape(g.name)}"]`)?.scrollIntoView({block:'center'});
 });
+$('keysDlg').addEventListener('click',e=>{if(e.target.id==='keysDlg')e.target.close()});
 loadTabs();
 render();
+try{if(!localStorage.getItem('counter.seenControls'))setTimeout(()=>toast('Press ? to see the controls'),1200)}catch(e){}
 </script>
 
 </body>
