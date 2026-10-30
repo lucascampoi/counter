@@ -79,6 +79,7 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) to run Counte
 - Credits: Felipe Casaprima, Rodrigo Saiani
 - Notes per glyph: idea by Rodrigo Saiani
 - Typeface of the interface: IBM Plex (SIL Open Font License)
+- Favicon: 🅰️ from [Noto Emoji](https://github.com/googlefonts/noto-emoji) (Apache License 2.0); browsers that support SVG icons show your system's own emoji
 
 ## License
 
